@@ -1,7 +1,9 @@
 let url_preset = "";
 
 let finalActives = [];
-let dataToReturn = localStorage.getItem("answers") ? JSON.parse(localStorage.getItem("answers")) : [];
+let dataToReturn = localStorage.getItem("answers")
+  ? JSON.parse(localStorage.getItem("answers"))
+  : [];
 let uniqueQuestionsShowed = [];
 let lastQuizResponseShown;
 let lastShowedQuestionId = null;
@@ -99,7 +101,13 @@ let oldAnswers = [];
 const customerId = document.getElementById("customer-id");
 const customerEmail = document.getElementById("customer-email");
 if (customerId || customerEmail) {
-  fetch(url_preset + "/v1/api/order/customer?id=" + customerId?.innerText + "&email=" + customerEmail?.innerText)
+  fetch(
+    url_preset +
+      "/v1/api/order/customer?id=" +
+      customerId?.innerText +
+      "&email=" +
+      customerEmail?.innerText
+  )
     .then((res) => res.json())
     .then((data) => {
       if (data.success && data.data) {
@@ -180,17 +188,31 @@ function showPreparingPage() {
 }
 
 async function showResults() {
-  const { accumlatedUniqueWeights, sortedWeightsArray } = getUniqueAccumlatedWeights(dataToReturn);
+  const { accumlatedUniqueWeights, sortedWeightsArray } =
+    getUniqueAccumlatedWeights(dataToReturn);
   const accumlatedBLActives = getUniqueBlackListActives(dataToReturn);
-  const { activesToAdd, activesToRemove } = await getEngineRules(accumlatedUniqueWeights);
-  const { sortedFinalActiveslist, sortedFinalActiveslistWithScores } = await calculatePrioritySelection(accumlatedUniqueWeights);
-  const filteredActivesListInitial = filterBlacklistActives(sortedFinalActiveslistWithScores);
-  finalActives = applyFinalCalculations(filteredActivesListInitial, activesToAdd, activesToRemove, dataToReturn);
+  const { activesToAdd, activesToRemove } = await getEngineRules(
+    accumlatedUniqueWeights
+  );
+  const { sortedFinalActiveslist, sortedFinalActiveslistWithScores } =
+    await calculatePrioritySelection(accumlatedUniqueWeights);
+  const filteredActivesListInitial = filterBlacklistActives(
+    sortedFinalActiveslistWithScores
+  );
+  finalActives = applyFinalCalculations(
+    filteredActivesListInitial,
+    activesToAdd,
+    activesToRemove,
+    dataToReturn
+  );
 
   console.log("accumlated weights", accumlatedUniqueWeights);
   console.log("black listed actives", accumlatedBLActives);
   console.log("full actives list", sortedFinalActiveslist);
-  console.log("full actives list with scores", sortedFinalActiveslistWithScores);
+  console.log(
+    "full actives list with scores",
+    sortedFinalActiveslistWithScores
+  );
   console.log("after first filter", filteredActivesListInitial);
   console.log("final actives List", finalActives);
 
@@ -203,7 +225,12 @@ async function showResults() {
   $("#page7").css("display", "block");
 } // showResults function ends here
 
-function applyFinalCalculations(blFilterdActiveList, activesToAdd, activesToRemove, answersArray) {
+function applyFinalCalculations(
+  blFilterdActiveList,
+  activesToAdd,
+  activesToRemove,
+  answersArray
+) {
   //select top 5
   //checkup here to see if it is first time or not
   let finalActivesList = [];
@@ -351,7 +378,10 @@ async function getEngineRules(uniqueWeights) {
         //between
         let min = rule.min;
         let max = rule.max;
-        if (uniqueWeights[ruleOutputVariable] >= min && uniqueWeights[ruleOutputVariable] <= max) {
+        if (
+          uniqueWeights[ruleOutputVariable] >= min &&
+          uniqueWeights[ruleOutputVariable] <= max
+        ) {
           if (actionTaken == 1) {
             //add
             activesInQuestion.forEach((aiq) => {
@@ -384,7 +414,8 @@ function getUniqueAccumlatedWeights(answersArray) {
   let weightsArray = [];
   let accumlatedUniqueWeightsWihBase = {};
   answersArray.forEach(function (answer) {
-    if (answer.weights && Object.keys(answer.weights).length) weightsArray.push(answer.weights);
+    if (answer.weights && Object.keys(answer.weights).length)
+      weightsArray.push(answer.weights);
   });
   if (weightsArray.length == 0) {
     return { accumlatedUniqueWeightsWihBase, sortedWeightsArray: [] };
@@ -393,8 +424,12 @@ function getUniqueAccumlatedWeights(answersArray) {
     Object.keys(weight).forEach(function (key) {
       if (accumlatedUniqueWeightsWihBase.hasOwnProperty(key)) {
         accumlatedUniqueWeightsWihBase[key] = {
-          value: parseFloat(accumlatedUniqueWeightsWihBase[key].value) + parseFloat(weight[key].value),
-          base: parseFloat(accumlatedUniqueWeightsWihBase[key].base) + parseFloat(weight[key].base),
+          value:
+            parseFloat(accumlatedUniqueWeightsWihBase[key].value) +
+            parseFloat(weight[key].value),
+          base:
+            parseFloat(accumlatedUniqueWeightsWihBase[key].base) +
+            parseFloat(weight[key].base),
         };
       } else {
         accumlatedUniqueWeightsWihBase[key] = {
@@ -406,37 +441,60 @@ function getUniqueAccumlatedWeights(answersArray) {
   });
 
   let accumlatedUniqueWeights = {};
-  Object.entries(accumlatedUniqueWeightsWihBase).forEach(([variableName, { value, base }]) => {
-    accumlatedUniqueWeights[variableName] = parseFloat(value) / parseFloat(base);
-  });
-  let sortedEntries = Object.entries(accumlatedUniqueWeights).sort(function (a, b) {
+  Object.entries(accumlatedUniqueWeightsWihBase).forEach(
+    ([variableName, { value, base }]) => {
+      accumlatedUniqueWeights[variableName] =
+        parseFloat(value) / parseFloat(base);
+    }
+  );
+  let sortedEntries = Object.entries(accumlatedUniqueWeights).sort(function (
+    a,
+    b
+  ) {
     return b[1] - a[1];
   });
 
   return { accumlatedUniqueWeights, sortedWeightsArray: sortedEntries };
 }
 async function calculatePrioritySelection(accumlatedUniqueWeights) {
-  const outputVariableList = await getFullOutputVariablesList().then((data) => data.output_variables);
+  const outputVariableList = await getFullOutputVariablesList().then(
+    (data) => data.output_variables
+  );
   const activesList = await getFullActivesList().then((data) => data.actives);
 
   const finalActiveScores = {};
   for (const active of activesList) {
     //equation
     const activeName = active.name;
-    let activesListWeightsScores = active.variables_scores ? JSON.parse(active.variables_scores) : {};
+    let activesListWeightsScores = active.variables_scores
+      ? JSON.parse(active.variables_scores)
+      : {};
     //filter empty active weights score
-    activesListWeightsScores = Object.entries(activesListWeightsScores).filter(([outputVarName, score]) => {
-      return score;
-    });
-    let filteredActivesWeightScores = Object.fromEntries(activesListWeightsScores);
+    activesListWeightsScores = Object.entries(activesListWeightsScores).filter(
+      ([outputVarName, score]) => {
+        return score;
+      }
+    );
+    let filteredActivesWeightScores = Object.fromEntries(
+      activesListWeightsScores
+    );
     Object.entries(filteredActivesWeightScores).forEach(([name, score]) => {
       const outputVariableAccumlatedWeight = accumlatedUniqueWeights[name];
       if (outputVariableAccumlatedWeight) {
-        const outputVariablePriority = outputVariableList.find((ovar) => ovar.name == name).priority;
+        const outputVariablePriority = outputVariableList.find(
+          (ovar) => ovar.name == name
+        ).priority;
         if (finalActiveScores.hasOwnProperty(activeName)) {
-          finalActiveScores[activeName] = parseFloat(finalActiveScores[activeName]) + parseFloat(outputVariableAccumlatedWeight) * parseFloat(outputVariablePriority / 100) * parseFloat(score);
+          finalActiveScores[activeName] =
+            parseFloat(finalActiveScores[activeName]) +
+            parseFloat(outputVariableAccumlatedWeight) *
+              parseFloat(outputVariablePriority / 100) *
+              parseFloat(score);
         } else {
-          finalActiveScores[activeName] = parseFloat(outputVariableAccumlatedWeight) * parseFloat(outputVariablePriority / 100) * parseFloat(score);
+          finalActiveScores[activeName] =
+            parseFloat(outputVariableAccumlatedWeight) *
+            parseFloat(outputVariablePriority / 100) *
+            parseFloat(score);
         }
       }
     });
@@ -448,8 +506,12 @@ async function calculatePrioritySelection(accumlatedUniqueWeights) {
       finalDividedList[active] = parseFloat(score / 1000);
     }
   });
-  let sortedFinalActiveslistWithScores = Object.entries(finalDividedList).sort(([, a], [, b]) => b - a);
-  let sortedFinalActiveslist = Object.keys(finalDividedList).sort((a, b) => finalDividedList[b] - finalDividedList[a]);
+  let sortedFinalActiveslistWithScores = Object.entries(finalDividedList).sort(
+    ([, a], [, b]) => b - a
+  );
+  let sortedFinalActiveslist = Object.keys(finalDividedList).sort(
+    (a, b) => finalDividedList[b] - finalDividedList[a]
+  );
   return { sortedFinalActiveslist, sortedFinalActiveslistWithScores };
 }
 function getUniqueBlackListActives(answersArray) {
@@ -479,14 +541,22 @@ async function createProfile(uniqueWeights) {
             <h1>${sectionTitle}</h1>
           </div>
           <div class="main-body">
-            ${await makePercentageDivs(uniqueWeights, section.output_variable_list, sectionTitle)}
+            ${await makePercentageDivs(
+              uniqueWeights,
+              section.output_variable_list,
+              sectionTitle
+            )}
         </div>
       </div>
     `;
     container.append(containerTemplate);
   }
 }
-async function makePercentageDivs(uniqueWeights, output_variable_list, sectionTitle) {
+async function makePercentageDivs(
+  uniqueWeights,
+  output_variable_list,
+  sectionTitle
+) {
   let accumlatedString = "";
 
   for (const item of output_variable_list) {
@@ -509,7 +579,10 @@ async function makePercentageDivs(uniqueWeights, output_variable_list, sectionTi
     </div>
     `;
     accumlatedString += tmp;
-    profile_characteristics[sectionTitle].push({ name: varName, percentage: percentage });
+    profile_characteristics[sectionTitle].push({
+      name: varName,
+      percentage: percentage,
+    });
   }
   return accumlatedString;
 }
@@ -520,7 +593,11 @@ async function getOutputVariableRangesResponses(varName, percentage) {
     const requiredRange = rangesResponses.find(function (rr) {
       let minRange = parseFloat(Object.keys(rr)[0].split("-")[0]);
       let maxRange = parseFloat(Object.keys(rr)[0].split("-")[1]);
-      if (Math.round(percentage) >= minRange && Math.round(percentage) <= maxRange) return rr;
+      if (
+        Math.round(percentage) >= minRange &&
+        Math.round(percentage) <= maxRange
+      )
+        return rr;
     });
     if (requiredRange) {
       let currResponse = requiredRange[Object.keys(requiredRange)[0]];
@@ -597,7 +674,11 @@ function getProfileSections() {
 function getActivesList(outputVariablesNames) {
   return new Promise(function (res, rej) {
     $.ajax({
-      url: url_preset + `/api/v1/output-variables/actives-list?names_list=${outputVariablesNames.join(",")}`,
+      url:
+        url_preset +
+        `/api/v1/output-variables/actives-list?names_list=${outputVariablesNames.join(
+          ","
+        )}`,
       type: "GET",
       success: function (response) {
         return res(response.data);
@@ -646,7 +727,10 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
   clearTimeout(timeout);
   clearTimeout(closeResponseTimeout);
   if (goBack) {
-    let stepBack = uniqueQuestionsShowed.length - 2 < 0 ? 0 : uniqueQuestionsShowed.length - 2;
+    let stepBack =
+      uniqueQuestionsShowed.length - 2 < 0
+        ? 0
+        : uniqueQuestionsShowed.length - 2;
     let backQuizId = uniqueQuestionsShowed[stepBack].quiz;
     if (stepBack !== 0) {
       uniqueQuestionsShowed.pop();
@@ -665,7 +749,11 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
     }
     $("#questionRow").css("display", "none");
     let dependedOnQuestions = totalQuizQuestions.filter(function (qs) {
-      return qs.depends_on && parseInt(qs.depends_on.split("|")[0]) == totalQuizQuestions[currentQuestionCounter].id;
+      return (
+        qs.depends_on &&
+        parseInt(qs.depends_on.split("|")[0]) ==
+          totalQuizQuestions[currentQuestionCounter].id
+      );
     });
     if (dependedOnQuestions.length > 0) {
       dependedOnQuestions.forEach((dq) => {
@@ -694,7 +782,10 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
 
   //first get the answer of previous question and store it.
   if (currentActiveAnswerType && !isSkipStoreAnswer) {
-    await storeAnswer(totalQuizQuestions[currentQuestionCounter - 1], currentActiveAnswerType);
+    await storeAnswer(
+      totalQuizQuestions[currentQuestionCounter - 1],
+      currentActiveAnswerType
+    );
   }
 
   weights = {};
@@ -736,7 +827,9 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
 
   // checking if there is any resp  onse in question or answer
   if (currentQuestionCounter != 0) {
-    apiQues = totalQuizQuestions.find((ques) => ques.id == lastShowedQuestionId);
+    apiQues = totalQuizQuestions.find(
+      (ques) => ques.id == lastShowedQuestionId
+    );
     let lastAnswerObject = dataToReturn.find(function (ansObj) {
       return ansObj.question.id == apiQues?.id;
     });
@@ -796,19 +889,25 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
           var replaceWith = localStorage.getItem(responseArguments[0]);
           if (replaceWith) {
             replaceWith = replaceWith.toUpperCase();
-            responseHeader = inject_substitute(responseHeader, "name", replaceWith);
+            responseHeader = inject_substitute(
+              responseHeader,
+              "name",
+              replaceWith
+            );
             responseHeader = responseHeader.split(" ")[0];
 
             $("#page3").css("display", "none");
             $("#page4").css("display", "block");
             $("#page4 .customImgRow .imgRowInner p").html("");
             $("#page4 .customImgRow .imgRowInner p").css("display", "block");
-            $("#page4 .customImgRow .imgRowInner p").append(`${responseHeader}`);
+            $("#page4 .customImgRow .imgRowInner p").append(
+              `${responseHeader}`
+            );
             responseOnGoing = true;
             hasNoResponse = false;
-            // closeResponseTimeout = setTimeout(async () => {
-            //   closeResponse();
-            // }, closeResponseTimeoutCounter);
+            closeResponseTimeout = setTimeout(async () => {
+              closeResponse();
+            }, closeResponseTimeoutCounter);
           }
         } else if (apiQues.answers && apiQues.answers[0].responseBody) {
           $("#page3").css("display", "none");
@@ -835,14 +934,21 @@ async function nextQuestion(goBack, goBackFromResponse, fromDependedOn) {
           showResponse(responseHeader, responseBody);
         }
       } else if ([4, 5, 6].includes(apiQues.type)) {
-        if (fullAnswerObject && (fullAnswerObject.response_header || fullAnswerObject.response_body)) {
+        if (
+          fullAnswerObject &&
+          (fullAnswerObject.response_header || fullAnswerObject.response_body)
+        ) {
           if (fullAnswerObject.response_arguments) {
             responseHeader = fullAnswerObject.response_header;
             var responseArguments = fullAnswerObject.response_arguments;
             responseArguments = JSON.parse(responseArguments);
             var replaceWith = localStorage.getItem(responseArguments[0]);
             replaceWith = replaceWith.toUpperCase();
-            responseHeader = inject_substitute(responseHeader, "name", replaceWith);
+            responseHeader = inject_substitute(
+              responseHeader,
+              "name",
+              replaceWith
+            );
             responseBody = fullAnswerObject.response_body;
           } else {
             responseHeader = fullAnswerObject.response_header;
@@ -891,7 +997,10 @@ function showResponse(responseHead, responseBody, weatherQuestion) {
   $("#page5").css("display", "block");
   if (responseHead) {
     $("#page5 .responseRow .responseInner .responseHead").html("");
-    $("#page5 .responseRow .responseInner .responseHead").css("display", "block");
+    $("#page5 .responseRow .responseInner .responseHead").css(
+      "display",
+      "block"
+    );
     $("#page5 .responseRow .responseInner .responseHead").append(`
           <h1>${responseHead}</h1>
       `);
@@ -900,7 +1009,10 @@ function showResponse(responseHead, responseBody, weatherQuestion) {
   }
   if (responseBody) {
     $("#page5 .responseRow .responseInner .responseBody").html("");
-    $("#page5 .responseRow .responseInner .responseBody").css("display", "block");
+    $("#page5 .responseRow .responseInner .responseBody").css(
+      "display",
+      "block"
+    );
     $("#page5 .responseRow .responseInner .responseBody").append(`
           <p>${responseBody}</p>
       `);
@@ -975,7 +1087,12 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     const userAnswerToDependedQuestion = dataToReturn.find(function (item) {
       return item.question.id == parseInt(dependedQuesId);
     });
-    if (!userAnswerToDependedQuestion || !userAnswerToDependedQuestion.answer || userAnswerToDependedQuestion.answer?.toLowerCase() != wantedAnswer?.toLowerCase()) {
+    if (
+      !userAnswerToDependedQuestion ||
+      !userAnswerToDependedQuestion.answer ||
+      userAnswerToDependedQuestion.answer?.toLowerCase() !=
+        wantedAnswer?.toLowerCase()
+    ) {
       currentActiveAnswerType = null;
       isSkipStoreAnswer = true;
       currentQuestionCounter++;
@@ -1010,7 +1127,8 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
       $("#noteRow .noteTitle h4").html("- Scientific Note -");
     }
   } else {
-    if (!$("#page3 .questionRow.mtb").hasClass("no-note")) $("#page3 .questionRow.mtb").addClass("no-note");
+    if (!$("#page3 .questionRow.mtb").hasClass("no-note"))
+      $("#page3 .questionRow.mtb").addClass("no-note");
     $("#noteRow").css("display", "none");
   }
   // end of displaying note
@@ -1027,17 +1145,21 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
   }
   // displaying question
   $("#questionRow").css("display", "block");
-  if (!$("#page3 .questionRow").hasClass("no-image")) $("#page3 .questionRow").addClass("no-image");
+  if (!$("#page3 .questionRow").hasClass("no-image"))
+    $("#page3 .questionRow").addClass("no-image");
   type = ques.type;
   if (ques.id == 1) {
-    if ($("#page3 .container").hasClass("mto")) $(".container").removeClass("mto");
+    if ($("#page3 .container").hasClass("mto"))
+      $(".container").removeClass("mto");
     $("#page3 .questionRow.mtb").removeClass("mtb");
     $("#page3 .container").addClass("center-everything");
     $("#identity").addClass("hide");
     saveResponseInto = ques.save_response_into;
   } else {
-    if ($("#page3 .container").hasClass("center-everything")) $("#page3 .container").removeClass("center-everything");
-    if (!$("#page3 .questionRow").hasClass("mtb")) $("#page3 .questionRow").addClass("mtb");
+    if ($("#page3 .container").hasClass("center-everything"))
+      $("#page3 .container").removeClass("center-everything");
+    if (!$("#page3 .questionRow").hasClass("mtb"))
+      $("#page3 .questionRow").addClass("mtb");
     $("#page3 .container").addClass("mto");
     $("#identity").removeClass("hide");
   }
@@ -1054,7 +1176,11 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     $("#typeText input").attr("id", ques.placeholder);
     if (alreadyAnswered && alreadyAnswered.answer) {
       $("#typeText input").val(alreadyAnswered.answer);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
       $("#typeText input").val(currenQuesAnswerObj.answer);
     } else {
       if (ques.id == 14) {
@@ -1074,7 +1200,11 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
 
     if (alreadyAnswered && alreadyAnswered.answer) {
       $("#typeNum input").val(alreadyAnswered.answer);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
       $("#typeNum input").val(currenQuesAnswerObj.answer);
     }
     if (ques.save_response_into) saveResponseInto = ques.save_response_into;
@@ -1095,11 +1225,23 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
       }
     });
     if (alreadyAnswered && alreadyAnswered.answer) {
-      $(`#typeMcq button[data-val="${alreadyAnswered.answer}"]`).addClass("highlight");
-      selectAlreadyMcqAnswered(`#typeMcq button[data-val="${alreadyAnswered.answer}"]`);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
-      $(`#typeMcq button[data-val="${currenQuesAnswerObj.answer}"]`).addClass("highlight");
-      selectAlreadyMcqAnswered(`#typeMcq button[data-val="${currenQuesAnswerObj.answer}"]`);
+      $(`#typeMcq button[data-val="${alreadyAnswered.answer}"]`).addClass(
+        "highlight"
+      );
+      selectAlreadyMcqAnswered(
+        `#typeMcq button[data-val="${alreadyAnswered.answer}"]`
+      );
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
+      $(`#typeMcq button[data-val="${currenQuesAnswerObj.answer}"]`).addClass(
+        "highlight"
+      );
+      selectAlreadyMcqAnswered(
+        `#typeMcq button[data-val="${currenQuesAnswerObj.answer}"]`
+      );
     }
   } // type 4 ends here
   else if (type == 5) {
@@ -1111,22 +1253,43 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     ques.answers.forEach((val) => {
       if (val.answer && val.image && ques.image_width && ques.image_height) {
         $("#typeMcqi .answerInner").append(`
-          <div class="mcqiOptions" style="width: ${ques.image_width}px; height: ${ques.image_height}px;">
-            <button data-id="${val.id}" data-val="${val.answer}" data-answer-value="${val.answer_value}" data-bl-active='${val.black_list_actives}' class="mcqiBtn">
-              <img class="mcqiImg" src="${url_preset + val.image.url}" alt="image missing">
+          <div class="mcqiOptions" style="width: ${
+            ques.image_width
+          }px; height: ${ques.image_height}px;">
+            <button data-id="${val.id}" data-val="${
+          val.answer
+        }" data-answer-value="${val.answer_value}" data-bl-active='${
+          val.black_list_actives
+        }' class="mcqiBtn">
+              <img class="mcqiImg" src="${
+                url_preset + val.image.url
+              }" alt="image missing">
             </button>
           </div>
         `);
-        if (!$("#page3 .row.noteRow").hasClass("image-below")) $("#page3 .row.noteRow").addClass("image-below");
+        if (!$("#page3 .row.noteRow").hasClass("image-below"))
+          $("#page3 .row.noteRow").addClass("image-below");
         $("#page3 .questionRow").removeClass("no-image");
       }
     });
     if (alreadyAnswered && alreadyAnswered.answer) {
-      $(`#typeMcqi button[data-val="${alreadyAnswered.answer}"]`).addClass("highlight");
-      selectAlreadyMcqiAnswered(`#typeMcqi button[data-val="${alreadyAnswered.answer}"]`);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
-      $(`#typeMcqi button[data-val="${currenQuesAnswerObj.answer}"]`).addClass("highlight");
-      selectAlreadyMcqiAnswered(`#typeMcqi button[data-val="${currenQuesAnswerObj.answer}"]`);
+      $(`#typeMcqi button[data-val="${alreadyAnswered.answer}"]`).addClass(
+        "highlight"
+      );
+      selectAlreadyMcqiAnswered(
+        `#typeMcqi button[data-val="${alreadyAnswered.answer}"]`
+      );
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
+      $(`#typeMcqi button[data-val="${currenQuesAnswerObj.answer}"]`).addClass(
+        "highlight"
+      );
+      selectAlreadyMcqiAnswered(
+        `#typeMcqi button[data-val="${currenQuesAnswerObj.answer}"]`
+      );
     }
   } // type 5 ends here
   else if (type == 6) {
@@ -1161,11 +1324,14 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
           width: val.image.width,
           height: val.image.height,
         };
-        if (!$("#page3 .row.noteRow").hasClass("image-below")) $("#page3 .row.noteRow").addClass("image-below");
+        if (!$("#page3 .row.noteRow").hasClass("image-below"))
+          $("#page3 .row.noteRow").addClass("image-below");
         $("#page3 .questionRow").removeClass("no-image");
         if (index == 0) {
           $("#typeSlide .answerInner .imgDiv").css("display", "block");
-          $("#typeSlide .answerInner .imgDiv").append(`<img id="${hasImage.id}" src="${hasImage.url}" alt="Image missing">`);
+          $("#typeSlide .answerInner .imgDiv").append(
+            `<img id="${hasImage.id}" src="${hasImage.url}" alt="Image missing">`
+          );
         }
       } else {
         $("#page3 .row.noteRow").removeClass("image-below");
@@ -1175,15 +1341,23 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
         max: minStep + incremental,
         image: hasImage,
         answer: val.answer,
-        black_list_actives: val.black_list_actives ? JSON.parse(val.black_list_actives) : [],
+        black_list_actives: val.black_list_actives
+          ? JSON.parse(val.black_list_actives)
+          : [],
         output_var: ques.output_variable_name,
         weight: ques.weight,
-        extra_var: ques.extra_output_variable ? JSON.parse(ques.extra_output_variable) : [],
+        extra_var: ques.extra_output_variable
+          ? JSON.parse(ques.extra_output_variable)
+          : [],
       });
 
       //add ranges
       $("#typeSlide .answerInner .sliderRanges").append(`
-        <div data-val="${val.answer}" data-id="${val.id}" data-min-range="${minStep}" data-max-range="${minStep + incremental}" class="ranges">
+        <div data-val="${val.answer}" data-id="${
+        val.id
+      }" data-min-range="${minStep}" data-max-range="${
+        minStep + incremental
+      }" class="ranges">
         ${val.hide_answer == 1 ? "" : val.answer}
         </div>
         `);
@@ -1191,14 +1365,24 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     });
 
     if (!atleastOneImage) {
-      if (!$("#page3 .questionRow").hasClass("no-image")) $("#page3 .questionRow").addClass("no-image");
+      if (!$("#page3 .questionRow").hasClass("no-image"))
+        $("#page3 .questionRow").addClass("no-image");
     }
-    $(".sliderRanges div").css("width", `${parseFloat(1 / ques.answers.length) * 100}%`);
+    $(".sliderRanges div").css(
+      "width",
+      `${parseFloat(1 / ques.answers.length) * 100}%`
+    );
     if (alreadyAnswered && alreadyAnswered.answer) {
       $(`#typeSlide #myRange`).val(parseFloat(alreadyAnswered.slider_value));
       $("#myRange").trigger("input", [true]);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
-      $(`#typeSlide #myRange`).val(parseFloat(currenQuesAnswerObj.slider_value));
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
+      $(`#typeSlide #myRange`).val(
+        parseFloat(currenQuesAnswerObj.slider_value)
+      );
       $("#myRange").trigger("input", [true]);
     }
   } // type 6 ends here
@@ -1221,15 +1405,23 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
       if (Array.isArray(alreadyAnswered.answer)) {
         alreadyAnswered.answer.forEach((answer) => {
           if (!["Banana", "Olive", "Sunflowers"].includes(answer)) {
-            $(`#typeSelection button[data-val="${answer}"]`).trigger("click", [true]);
+            $(`#typeSelection button[data-val="${answer}"]`).trigger("click", [
+              true,
+            ]);
           }
         });
       }
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
       if (Array.isArray(currenQuesAnswerObj.answer)) {
         currenQuesAnswerObj.answer.forEach((answer) => {
           if (!["Banana", "Olive", "Sunflowers"].includes(answer)) {
-            $(`#typeSelection button[data-val="${answer}"]`).trigger("click", [true]);
+            $(`#typeSelection button[data-val="${answer}"]`).trigger("click", [
+              true,
+            ]);
           }
         });
       }
@@ -1244,7 +1436,11 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     if (alreadyAnswered && alreadyAnswered.answer) {
       $("#typeGeo input#city").val(alreadyAnswered.answer);
       $("#typeGeo #city_id").val(alreadyAnswered.city_id);
-    } else if (currenQuesAnswerObj && currenQuesAnswerObj.answer && !alreadyAnswered) {
+    } else if (
+      currenQuesAnswerObj &&
+      currenQuesAnswerObj.answer &&
+      !alreadyAnswered
+    ) {
       $("#typeGeo input#city").val(currenQuesAnswerObj.answer);
       $("#typeGeo #city_id").val(currenQuesAnswerObj.city_id);
     }
@@ -1285,12 +1481,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1328,12 +1530,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1367,12 +1575,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1406,12 +1620,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1431,12 +1651,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1454,12 +1680,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1475,7 +1707,11 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
       return false;
     }
     if (ans && !city_id) {
-      await fetch(url_preset + "/api/v1/places/autocomplete?input=" + ans.replace(/ /g, ""))
+      await fetch(
+        url_preset +
+          "/api/v1/places/autocomplete?input=" +
+          ans.replace(/ /g, "")
+      )
         .then((res) => res.json())
         .then(function (data) {
           city_id = data[0].id;
@@ -1483,11 +1719,15 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
     }
     try {
       if (!$(".lds-ring").hasClass("active")) $(".lds-ring").addClass("active");
-      const payload = await fetch(url_preset + `/api/v1/weather-profile?city_id=${city_id}`).then((response) => response.json());
+      const payload = await fetch(
+        url_preset + `/api/v1/weather-profile?city_id=${city_id}`
+      ).then((response) => response.json());
       if (payload.success && payload.data) {
         temp["weights"] = payload.data.weights;
         $("#humidity .info-value").html(payload.data.humidity);
-        $("#temp .info-value").html(`${payload.data.temperature}${payload.data.unit}`);
+        $("#temp .info-value").html(
+          `${payload.data.temperature}${payload.data.unit}`
+        );
         $("#sun .info-value").html(payload.data.sun);
         $("#pollution .info-value").html(payload.data.pollution);
       } else {
@@ -1509,12 +1749,18 @@ async function storeAnswer(currentQuestion, currentActiveAnswerType) {
         dataToReturn.push(temp);
       } else {
         const dependedOnQuestions = dataToReturn.filter((ansObj, index) => {
-          if (ansObj.question.depends_on && ansObj.question.depends_on.split("|")[0] == temp["question"].id) {
+          if (
+            ansObj.question.depends_on &&
+            ansObj.question.depends_on.split("|")[0] == temp["question"].id
+          ) {
             ansObj.obj_index = index;
             return ansObj;
           }
         });
-        if (dependedOnQuestions && temp["answer"] !== dataToReturn[answerExists].answer) {
+        if (
+          dependedOnQuestions &&
+          temp["answer"] !== dataToReturn[answerExists].answer
+        ) {
           dependedOnQuestions.forEach((dq) => {
             dataToReturn.splice(dq.obj_index, 1);
           });
@@ -1532,7 +1778,10 @@ let itemSelected = false;
 let enterOnce = false;
 
 $(document).on("click focus", async function (event) {
-  if (!event.target.closest("#result") && !event.target.closest("#typeGeo input")) {
+  if (
+    !event.target.closest("#result") &&
+    !event.target.closest("#typeGeo input")
+  ) {
     $("#result").css({
       display: "none",
     });
@@ -1573,7 +1822,9 @@ $("#typeGeo input").on("keyup", function (evt) {
         return nextQuestion();
       }
       $("#typeGeo input").val($("#suggestion-list li.active.selected").text());
-      $("#typeGeo #city_id").val($("#suggestion-list li.active.selected").attr("data-place-id"));
+      $("#typeGeo #city_id").val(
+        $("#suggestion-list li.active.selected").attr("data-place-id")
+      );
       $("#result").css({
         display: "none",
       });
@@ -1593,13 +1844,19 @@ $("#typeGeo input").on("keyup", function (evt) {
         currentSuggestIndex = 1;
       }
     } else if (evt.key == "ArrowUp") {
-      currentSuggestIndex = currentSuggestIndex ? currentSuggestIndex - 1 : listLength;
+      currentSuggestIndex = currentSuggestIndex
+        ? currentSuggestIndex - 1
+        : listLength;
       if (currentSuggestIndex < 1) {
         currentSuggestIndex = listLength;
       }
     }
-    $(`#suggestion-list li:nth-child(${currentSuggestIndex})`).addClass("active");
-    $(`#suggestion-list li:nth-child(${currentSuggestIndex})`).addClass("selected");
+    $(`#suggestion-list li:nth-child(${currentSuggestIndex})`).addClass(
+      "active"
+    );
+    $(`#suggestion-list li:nth-child(${currentSuggestIndex})`).addClass(
+      "selected"
+    );
     return false;
   }
 
@@ -1616,11 +1873,18 @@ $("#typeGeo input").on("keyup", function (evt) {
     return;
   }
   let list = "";
-  fetch(url_preset + "/api/v1/places/autocomplete?input=" + val.replace(/ /g, ""))
+  fetch(
+    url_preset + "/api/v1/places/autocomplete?input=" + val.replace(/ /g, "")
+  )
     .then((res) => res.json())
     .then(function (data) {
       for (i = 0; i < data.length; i++) {
-        list += `<li class='autocomplete-item' data-place-id='${data[i].id}' tabindex='${i + 1}'>` + data[i].name + "</li>";
+        list +=
+          `<li class='autocomplete-item' data-place-id='${
+            data[i].id
+          }' tabindex='${i + 1}'>` +
+          data[i].name +
+          "</li>";
       }
       res.html(`<ul id='suggestion-list'>` + list + `</ul>`);
       return true;
@@ -1656,7 +1920,9 @@ $(document).on("input", "#myRange", async function (event, isCustom) {
   sliderBLActives = currRange.black_list_actives;
   if (currRange.image) {
     if ($("#typeSlide .answerInner .imgDiv img").length == 0) {
-      $("#typeSlide .answerInner .imgDiv").append(`<img id="${currRange.image.id}" src="${currRange.image.url}" alt="Image missing">`);
+      $("#typeSlide .answerInner .imgDiv").append(
+        `<img id="${currRange.image.id}" src="${currRange.image.url}" alt="Image missing">`
+      );
     } else {
       $("#typeSlide .answerInner .imgDiv img").attr("id", currRange.image.id);
       $("#typeSlide .answerInner .imgDiv img").attr("src", currRange.image.url);
@@ -1742,7 +2008,9 @@ async function addToCart() {
   if (response.ok && data) {
     const products = data.products;
     existingProducts = products.filter((product) => {
-      let inFinalList = finalActives.find((active) => active[0] == product.title);
+      let inFinalList = finalActives.find(
+        (active) => active[0] == product.title
+      );
       if (inFinalList) {
         product.score = inFinalList[1];
         return product;
@@ -1754,7 +2022,9 @@ async function addToCart() {
     lineItems.push({
       id: prod.variants[0].id,
       quantity: 1,
-      properties: { score: prod.score ? parseFloat(prod.score).toFixed(2) : -1 },
+      properties: {
+        score: prod.score ? parseFloat(prod.score).toFixed(2) : -1,
+      },
     });
     // }
   });
