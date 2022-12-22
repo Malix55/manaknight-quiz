@@ -1395,11 +1395,16 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
       if (val.answer) {
         $("#typeSelection .answerInner").append(`
           <div class="selectionOptions">
-            <button data-val="${val.answer}" data-id="${val.id}" class="selectionBtns selectionBtn" >${val.answer}</button>
+            <button data-val="${val.answer}" data-id="${val.id}" class="selectionBtns selectionBtn" onclick="checkAllergie()" >${val.answer}</button>
           </div>
         `);
       }
     });
+    $("#typeSelection .answerInner").append(`
+          <div class="selectionOptions">
+            <button data-val="${"None of the Above"}"  data-id="${"None of the Above"}" class="selectionBtns selectionBtn" onclick="handleNoneOfTheAbove()" >${"None of the Above"}</button>
+          </div>
+        `);
 
     if (alreadyAnswered && alreadyAnswered.answer) {
       if (Array.isArray(alreadyAnswered.answer)) {
@@ -2065,8 +2070,16 @@ async function addToCart() {
 }
 
 function handleNoneOfTheAbove() {
+  console.log("sdas");
   isSkipStoreAnswer = true;
   nextQuestion();
+}
+
+function checkAllergie() {
+  // if (["Banana", "Olive", "Sunflowers"].includes(answer)) {
+  console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  // }
+  console.log("aaaaaaaaaaa");
 }
 
 function handleImageMissing(self) {
