@@ -1,3 +1,4 @@
+const CounterController = require("./admin/Admin_counter_controller");
 const AdminUserController = require("./admin/Admin_user_controller");
 const Admin_order_controller = require("./admin/Admin_order_controller");
 const AdminQuizController = require("./admin/Admin_quiz_controller");
@@ -31,4 +32,5 @@ module.exports = [
   MemberDashboard,
   PublicIndex,
   getProducts,
+  CounterController,
 ];
