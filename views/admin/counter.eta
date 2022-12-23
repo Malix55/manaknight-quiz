@@ -1,0 +1,47 @@
+<% if(it.layout_clean_mode) {%>
+<% layout("../layouts/admin/Clean") %>
+<% } else {%>
+<% layout("../layouts/admin/Main") %>
+<%}%>
+
+<%~ includeFile("../partials/admin/Breadcrumb", it)%>
+<section>
+    <div class="row">
+        <div class="col-lg-3 col-md-3 col-sm-1 col-xs-1"></div>
+            <div class="col-lg-6 col-md-6 col-sm-10 col-xs-10 p-5 auth-wrap">
+            <%~ includeFile("../partials/admin/GlobalResponse.eta", it) %>
+                <div class='text-center'>
+                    <h1>Counter</h1>
+                </div>
+                <div class="form-container form-container-auth">
+                    <form action="/admin/counter-add" method="POST">
+                        <div class="form-group required">
+                            <label class='control-label' for="text">text</label>
+                            <input type="text" required class="form-control site-input" id="text" name="text"  required="true" />
+
+                        </div>
+                        <div class="form-group required text-container">
+                            <label class='control-label' for="time">time</label>
+                            <input type="number" required class="form-control site-input" id="time" name="time"  required="true" >
+                        </div>
+                        
+                        <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                        </div>
+
+                    </form>
+                </div>
+
+
+                
+
+</div>
+</div>
+</div>
+</section>
+
+<div class='text-center'> 
+    <p>Copyright © 2021 Manaknightdigital Inc. All rights reserved.</p>
+
+    <p>Powered By <a href="https://manaknightdigital.com" target="__blank">Manaknightdigital Inc.</a></p>
+</div>

@@ -1392,10 +1392,15 @@ async function askQuestion(totalQuizQuestions, counter, fromBack) {
     currentActiveAnswerType = "typeSelection";
 
     ques.answers.forEach((val, index) => {
+      console.log(val);
       if (val.answer) {
         $("#typeSelection .answerInner").append(`
           <div class="selectionOptions">
-            <button data-val="${val.answer}" data-id="${val.id}" class="selectionBtns selectionBtn" onclick="checkAllergie()" >${val.answer}</button>
+            <button data-val="${val.answer}" id="${val.answer}"  data-id="${
+          val.id
+        }" class="selectionBtns selectionBtn" onclick=checkAllergie(${String(
+          val.answer
+        )})>${val.answer}</button>
           </div>
         `);
       }
@@ -2075,11 +2080,52 @@ function handleNoneOfTheAbove() {
   nextQuestion();
 }
 
-function checkAllergie() {
-  // if (["Banana", "Olive", "Sunflowers"].includes(answer)) {
-  console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  // }
-  console.log("aaaaaaaaaaa");
+function checkAllergie(value) {
+  const prevValue = value.id;
+  console.log("button clicked", prevValue);
+  if (["Banana", "Olive", "Sunflowers"].includes(prevValue)) {
+    terminateQuiz();
+  }
+  console.log(prevValue);
+}
+
+function terminateQuiz() {
+  fetch(url_preset + "/count")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("dsdasdasdasda", data.data.text);
+
+      const overlay = document.createElement("div");
+      overlay.style.backgroundColor = "#000";
+      overlay.style.position = "fixed";
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = "100%";
+      overlay.style.height = "100%";
+      overlay.style.paddingTop = "10%";
+      overlay.style.paddingLeft = "40%";
+      overlay.style.fontSize = "5ch";
+      overlay.style.color = "#fff";
+      document.body.appendChild(overlay);
+
+      const message = document.createElement("p");
+      message.innerText = data.data.text;
+      overlay.appendChild(message);
+
+      const counter = document.createElement("span");
+      counter.innerText = data.data.time;
+      overlay.appendChild(counter);
+
+      let count = data.data.time;
+      const interval = setInterval(() => {
+        count--;
+        counter.innerText = count;
+        if (count === 0) {
+          clearInterval(interval);
+          window.location.href = "/";
+        }
+      }, 1000);
+    });
 }
 
 function handleImageMissing(self) {

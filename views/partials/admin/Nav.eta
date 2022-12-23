@@ -10,6 +10,7 @@
     <li><a href="/admin/orders/0" class="menu-item <%= it._base_url === '/admin/orders' ? 'menu-active':''%>">Orders</a></li>
     <li><a href="/admin/quizzes/0" class="menu-item <%= it._base_url === '/admin/quizzes' ? 'menu-active':''%>">Quizzes</a></li>
     <li><a href="/admin/questions/0" class="menu-item <%= it._base_url === '/admin/questions' ? 'menu-active':''%>">Questions</a></li>
+    <li><a href="/admin/counter" class="menu-item <%= it._base_url === '/admin/counter' ? 'menu-active':''%>">Counter</a></li>
     <li><a href="/admin/answers/0" class="menu-item <%= it._base_url === '/admin/answers' ? 'menu-active':''%>">Answers</a></li>
     <li><a href="/admin/rules/0" class="menu-item <%= it._base_url === '/admin/rules' ? 'menu-active':''%>">Rules</a></li>
     <li><a href="/admin/actives/0" class="menu-item <%= it._base_url === '/admin/actives' ? 'menu-active':''%>">Actives</a></li>
